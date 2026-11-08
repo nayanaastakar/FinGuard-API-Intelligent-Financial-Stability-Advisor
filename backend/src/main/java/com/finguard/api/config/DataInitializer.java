@@ -24,7 +24,7 @@ import java.util.Random;
 public class DataInitializer implements CommandLineRunner {
 
     private static final int RENT_MONTHS = 9;
-    private static final boolean SIMPLE_SEED = true; // if true, use simplified monthly income entries
+    private static final boolean SIMPLE_SEED = false; // if true, use simplified monthly income entries
     private final Random random = new Random();
 
     /**
@@ -158,20 +158,20 @@ public class DataInitializer implements CommandLineRunner {
                 double base = jitter(1500.0, 0.15);
                 addSimplifiedIncome(user, monthDate, base);
             } else {
-                incomeService.addIncome(new IncomeRequest(jitter(1500.0, 0.15), "FREELANCE", "Retainer Client A", monthDate,
+                incomeService.addIncome(new IncomeRequest(jitter(15000.0, 0.15), "FREELANCE", "Retainer Client A", monthDate,
                         "Monthly website maintenance retainer"), user);
-                incomeService.addIncome(new IncomeRequest(jitter(800.0, 0.2), "BUSINESS", "Invoice - Client B", monthDate.plusDays(5),
+                incomeService.addIncome(new IncomeRequest(jitter(8000.0, 0.2), "BUSINESS", "Invoice - Client B", monthDate.plusDays(5),
                         "Consulting invoice payment"), user);
                 if (m % 2 == 0) {
-                    incomeService.addIncome(new IncomeRequest(jitter(3200.0, 0.35), "GIG_WORK", "Upwork Gig", monthDate.plusDays(10),
+                    incomeService.addIncome(new IncomeRequest(jitter(12000.0, 0.35), "GIG_WORK", "Upwork Gig", monthDate.plusDays(10),
                             "Freelance project payout"), user);
                 }
                 if (m % 3 == 0) {
-                    incomeService.addIncome(new IncomeRequest(jitter(1800.0, 0.25), "GIG_WORK", "Client X", monthDate.plusDays(15),
+                    incomeService.addIncome(new IncomeRequest(jitter(9000.0, 0.25), "GIG_WORK", "Client X", monthDate.plusDays(15),
                             "Design and branding delivery"), user);
                 }
                 if (m % 4 == 0) {
-                    incomeService.addIncome(new IncomeRequest(jitter(900.0, 0.2), "BUSINESS", "Consulting Sprint", monthDate.plusDays(20),
+                    incomeService.addIncome(new IncomeRequest(jitter(6000.0, 0.2), "BUSINESS", "Consulting Sprint", monthDate.plusDays(20),
                             "Short-term client engagement"), user);
                 }
             }
