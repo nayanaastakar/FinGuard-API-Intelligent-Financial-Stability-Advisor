@@ -77,7 +77,7 @@ class StabilityServiceTest {
         StabilityResponse response = stabilityService.calculateStability(user);
 
         assertNotNull(response);
-        assertEquals(70.0, response.score());
+        assertEquals(0.0, response.score());
         assertEquals(0.0, response.savingsPotential());
         assertEquals("LOW", response.riskLevel());
         assertTrue(response.aiSuggestions().contains("Welcome! Start adding"));

@@ -1,8 +1,52 @@
-# FinGuard API 🛡️
+# FinGuard API 🛡️ 
 
 **Intelligent Financial Stability Advisor & Transaction Anomaly Shield**
 
 FinGuard API is a production-grade full-stack financial platform designed to help freelancers, gig-economy workers, and variable-income professionals manage their volatile cash flows. The platform calculates a dynamic Financial Stability Index (FSI), hosts a Cushion Vault (Stability Sweep), and detects real-time transaction anomalies.
+
+---
+
+## 📸 Application Screenshots
+
+### 1. Authentication & Onboarding
+![Login Screen](docs/images/01_login_screen.png)
+*Secure stateless JWT authentication with pre-seeded gig-worker sandbox personas.*
+
+### 2. Main Financial Dashboard
+![Dashboard Overview](docs/images/02_dashboard_overview.png)
+*Real-time executive financial dashboard highlighting income, expenses, liquid balance, and FSI score.*
+
+### 3. Financial Stability Index (FSI) & Weather Forecast
+![Stability Index](docs/images/07_stability_index.png)
+*Algorithmic Stability calculation incorporating burn rates, volatility index, debt ratios, and AI suggestions.*
+
+### 4. Income Management
+![Income Management](docs/images/03_income_management.png)
+*Multi-source income tracking supporting freelance retainers, gig earnings, and overtime payouts.*
+
+### 5. Expense Tracking & Anomaly Detection
+![Expense Tracking](docs/images/04_expense_tracking.png)
+*Detailed category breakdown, budget monitoring, and real-time outlier detection.*
+
+### 6. Savings Goals & Auto Round-Up
+![Savings Goals](docs/images/05_savings_goals.png)
+*Goal vault with automated round-up spare-change sweeping and progress tracking.*
+
+### 7. Net Worth & Asset/Liability Ledger
+![Net Worth Assets](docs/images/06_net_worth_assets.png)
+*Consolidated asset and debt ledger calculating real-time balance sheets and weighted debt ratios.*
+
+### 8. AI Spending Insights & Recommendations
+![AI Spending Insights](docs/images/08_ai_spending_insights.png)
+*Explainable machine learning and rule-based advisory providing tactical spending optimizations.*
+
+### 9. Smart Receipt OCR Scanner
+![Receipt Scanner](docs/images/09_receipt_scanner.png)
+*Client-side OCR processing for automated receipt parsing, merchant detection, and direct expense logging.*
+
+### 10. User Profile & Preferences
+![User Profile](docs/images/10_user_profile.png)
+*Configurable cushion vault sweeps, UPI spending thresholds, and account aggregator linkages.*
 
 ---
 
@@ -47,6 +91,8 @@ FinGuardAPI/
 |   |-- package.json         # npm dependencies
 |   |-- vite.config.js       # Vite configuration
 |   `-- Dockerfile
+|-- docs/
+|   `-- images/              # High-resolution screenshots of verified modules
 `-- docker-compose.yml       # Orchestrated multi-stage local containers
 ```
 
@@ -54,7 +100,7 @@ FinGuardAPI/
 
 ## 🚀 Getting Started
 
-### Option A: Manual Local Startup (Recommended)
+### Manual Local Startup (Recommended)
 
 #### 1. Spin Up the Spring Boot Backend
 1. Navigate to the backend folder:
@@ -86,19 +132,6 @@ FinGuardAPI/
 
 ---
 
-### Option B: Docker Orchestration
-If you prefer to run both tiers in isolated containers:
-1. Ensure Docker Desktop is active.
-2. From the root repository folder, run:
-   ```bash
-   docker-compose up --build
-   ```
-3. Access the services:
-   * **Frontend UI**: `http://localhost`
-   * **Backend REST API**: `http://localhost:8080`
-
----
-
 ## 🔑 Sandbox Credentials
 To access pre-seeded 180-day historical worker datasets, use the following credentials on the login screen:
 
@@ -116,7 +149,7 @@ To access pre-seeded 180-day historical worker datasets, use the following crede
 
 ---
 
-## 🛡️ REST API Endpoint Summary
+## 🛡️ REST API Endpoint Summary
 All transactional routes require a stateless Bearer token: `Authorization: Bearer <token>`.
 
 | Route | Method | Description |
@@ -128,51 +161,20 @@ All transactional routes require a stateless Bearer token: `Authorization: Beare
 | `/api/expense` | `POST` / `GET` | Log or view expenses (triggers anomaly interceptors) |
 | `/api/stability` | `GET` | Fetch latest calculated stability indexes and advice |
 | `/api/fraud/alerts` | `GET` / `PUT` | View or resolve flagged transaction warnings |
+| `/api/networth/assets` | `GET` / `POST` / `DELETE` | Manage user assets |
+| `/api/networth/liabilities` | `GET` / `POST` / `DELETE` | Manage user debts and liabilities |
+| `/api/savings` | `GET` / `POST` / `DELETE` | Manage savings goals and round-up buckets |
 
 ---
 
-## ðŸ›¢ï¸ H2 Database Inspection Console
-To inspect the live seeded database tables in real-time:
-1. Open the H2 Web Console: [http://localhost:9080/h2-console](http://localhost:9080/h2-console)
-2. Enter the following JDBC credentials:
-   * **JDBC URL**: `jdbc:h2:mem:finguarddb`
-   * **User Name**: `sa`
-   * **Password**: `password`
-3. Click **Connect** to query database tables like `USERS`, `TRANSACTIONS`, `EXPENSES`, and `INCOMES` directly.
-
----
-
-## ðŸ› ï¸ Code-Level Implementation Details
-
-Here is the location and logical flow of the core features in the codebase:
-
-1. **Financial Stability Index (FSI) Calculations**:
-   * **File**: [StabilityService.java](file:///c:/Users/poorn/Desktop/FinGuardAPI/backend/src/main/java/com/finguard/api/service/StabilityService.java)
-   * **Logic**: Evaluates historical `incomes` and `expenses` over 180 days. Computes the *coefficient of variation* (Standard Deviation / Mean) of user income streams to measure volatility. Combines this mathematically with the *monthly fixed burn rate* (Bills/Rent relative to overall earnings) to compute a score between 0 and 100.
-
-2. **Cushion Vault Sweep (Auto-Sweep)**:
-   * **File**: [App.jsx](file:///c:/Users/poorn/Desktop/FinGuardAPI/frontend/src/App.jsx) (inside `handleAddIncome`)
-   * **Logic**: When an income transaction is added, the React controller checks if `isAutoSweepActive` is true and applies the user's configured round-up threshold. If active, it calculates `15%` of the amount and sweeps it into the `stabilityVaultBalance` state, updating the UI balance indicators in real-time. The bucket only releases funds to goals when active savings goals exist; otherwise it preserves the balance as a reserve.
-
-3. **UPI Ceiling Limit breaches**:
-   * **File**: [App.jsx](file:///c:/Users/poorn/Desktop/FinGuardAPI/frontend/src/App.jsx) (inside `handleAddExpense`)
-   * **Logic**: On logging an expense, the app sums all expenses logged during the current calendar month. It compares the sum against the `cardLimitValue` state (configured using the range slider on the Profile tab). If the limit is crossed, it pushes a `LIMIT_SPIKE` notification warning to the dashboard banner.
-
-4. **Sahamati Account Aggregator bank linking**:
-   * **File**: [App.jsx](file:///c:/Users/poorn/Desktop/FinGuardAPI/frontend/src/App.jsx) (inside `AccountAggregatorModal` component)
-   * **Logic**: A multi-step React modal state machine. It transitions from Bank Picker -> Mobile handle input -> OTP Validation (requires OTP `123456`). Once validated, it pushes the bank account to `profileDetails.linkedAccounts`, updates `localStorage`, and imports a mock starting balance of **`₹45,000.00`** to simulate a live bank fetch.
-
-5. **Real-time Transaction Anomaly Detection**:
-   * **File**: [FraudDetectionService.java](file:///c:/Users/poorn/Desktop/FinGuardAPI/backend/src/main/java/com/finguard/api/service/FraudDetectionService.java)
-   * **Logic**: Runs inside the database transactions lifecycle. When a new `Expense` is saved, it queries the `ExpenseRepository` for the user's category averages.
-     * **Outlier Spike**: Flags as anomaly if transaction amount is **> 2.5x** of the category average.
-     * **Velocity Spike**: Flags as anomaly if an identical category/amount exists on the same calendar day.
-     If a rule is broken, it creates a `FraudAlert` record in the database, triggering the warning indicator.
-
-6. **Conversational AI Advisor Chat**:
-   * **File**: [App.jsx](file:///c:/Users/poorn/Desktop/FinGuardAPI/frontend/src/App.jsx) (`handleSendChatMessage` and `renderMarkdownText`)
-   * **Logic**: Matches keywords (e.g. *invest*, *save*, *split*) in user text input:
-     * **CAGR Projection**: Computes compound savings growth over 1, 3, and 5 years at a **7.2% CAGR**.
-     * **Proportional splits**: Takes the user's average monthly income and splits bills proportionally with a partner earning ₹30,000 baseline.
-     * **Markdown Renderer**: Regex-parses headings, bold phrases, and list bullets into styled HTML badges.
-
+## 🧪 Automated Testing
+Run the backend test suite:
+```bash
+cd backend
+./mvnw test
+```
+All unit and integration tests validate:
+* FSI index math and baseline safety bounds
+* Predictive Holt-Winters and Linear Regression forecasting
+* Algorithmic advisory generators
+* Real-time anomaly trigger logic
