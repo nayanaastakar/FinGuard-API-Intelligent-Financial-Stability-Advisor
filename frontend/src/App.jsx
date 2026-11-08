@@ -114,17 +114,33 @@ const EMPTY_FORECAST_RESULT = {
 };
 
 const EMPTY_DASHBOARD = {
-  totalIncome: 0,
-  totalExpense: 0,
-  balance: 0,
-  stabilityScore: 0,
+  totalIncome: 349094.32,
+  totalExpense: 32302.53,
+  balance: 316791.79,
+  stabilityScore: 79.35,
   riskLevel: 'LOW',
-  savingsPotential: 0,
-  recentTransactions: [],
-  monthlyExpensesByCategory: {},
-  monthlyIncomesByCategory: {},
-  notifications: [],
-  fraudAlerts: [],
+  savingsPotential: 35199.09,
+  recentTransactions: [
+    { id: 47, type: 'INCOME', amount: 7187.56, category: 'BUSINESS', date: '2026-11-21', description: 'Short-term client engagement' },
+    { id: 50, type: 'EXPENSE', amount: 4829.22, category: 'SHOPPING', date: '2026-11-19', description: 'Home office upgrades' },
+    { id: 46, type: 'INCOME', amount: 11211.24, category: 'GIG_WORK', date: '2026-11-16', description: 'Design and branding delivery' },
+    { id: 49, type: 'EXPENSE', amount: 1773.27, category: 'SHOPPING', date: '2026-11-15', description: 'Work equipment and software' },
+    { id: 45, type: 'INCOME', amount: 14662.02, category: 'GIG_WORK', date: '2026-11-11', description: 'Freelance project payout' },
+    { id: 44, type: 'INCOME', amount: 8546.56, category: 'BUSINESS', date: '2026-11-06', description: 'Consulting invoice payment' },
+    { id: 48, type: 'EXPENSE', amount: 209.27, category: 'BILLS', date: '2026-11-04', description: 'AWS hosting, SaaS and tools' },
+    { id: 43, type: 'INCOME', amount: 16874.83, category: 'FREELANCE', date: '2026-11-01', description: 'Monthly website maintenance retainer' },
+    { id: 42, type: 'EXPENSE', amount: 1795.95, category: 'SHOPPING', date: '2026-10-15', description: 'Work equipment and software' },
+    { id: 40, type: 'INCOME', amount: 9307.02, category: 'BUSINESS', date: '2026-10-06', description: 'Consulting invoice payment' }
+  ],
+  monthlyExpensesByCategory: { SHOPPING: 30498.36, BILLS: 1804.17 },
+  monthlyIncomesByCategory: { BUSINESS: 99235.25, GIG_WORK: 104374.27, FREELANCE: 145484.8 },
+  notifications: [
+    { id: 25, title: 'Round-up bucket ready', message: 'Your round-up bucket has reached ₹107.47 but no active goals need funds yet. It will stay in the bucket until you create or reactivate a goal.', type: 'ROUND_UP', isRead: false, createdAt: '2026-11-08T21:27:31' },
+    { id: 24, title: 'Suspicious Activity Detected', message: 'Transaction of Rs 4829.22 in SHOPPING exceeds your historical expense average by over 250%.', type: 'FRAUD', isRead: false, createdAt: '2026-11-08T21:27:31' }
+  ],
+  fraudAlerts: [
+    { id: 4, alertType: 'LARGE_OUTLIER', description: 'Transaction of Rs 4829.22 in SHOPPING exceeds your historical expense average by over 250%.', status: 'ACTIVE', createdAt: '2026-11-08T21:27:31', amount: 4829.22, category: 'SHOPPING' }
+  ],
   incomeForecast: EMPTY_FORECAST_RESULT,
   expenseForecast: EMPTY_FORECAST_RESULT
 };
@@ -162,7 +178,11 @@ export default function App() {
     const saved = localStorage.getItem('cardLimitValue');
     return saved !== null ? parseInt(saved, 10) : 12000;
   });
-  const [stabilityVaultBalance, setStabilityVaultBalance] = useState(0.0);
+  const [stabilityVaultBalance, setStabilityVaultBalance] = useState(() => {
+    const saved = localStorage.getItem('stabilityVaultBalance');
+    const val = saved !== null ? parseFloat(saved) : 0;
+    return val > 0 ? val : 47518.77;
+  });
 
   useEffect(() => {
     if (dashboardData && stabilityVaultBalance === 0 && dashboardData.balance > 0) {
@@ -665,6 +685,9 @@ export default function App() {
         }
         
         setDashboardData(data);
+        if (data.balance > 0) {
+          setStabilityVaultBalance(prev => (prev > 0 ? prev : Math.floor(data.balance * 0.15 * 100) / 100));
+        }
         setFraudAlerts(data.fraudAlerts || []);
         setNotifications(data.notifications || []);
         setBackendOffline(false);
@@ -722,6 +745,7 @@ export default function App() {
       fetchNetWorth();
       fetchSavingsGoals();
       fetchExpenses(); // Needed for auto round-up history on dashboard
+      fetchIncomes();  // Populate income ledger immediately
     }
   }, [token]);
 
@@ -778,6 +802,7 @@ export default function App() {
           autoRoundUpEnabled: true,
           roundUpBucketThreshold: 50.0
         };
+        setStabilityVaultBalance(47518.77);
         localStorage.setItem('token', 'mock-jwt-token');
         localStorage.setItem('user', JSON.stringify(mockUser));
         setToken('mock-jwt-token');
@@ -3077,7 +3102,7 @@ export default function App() {
                 <div>
                   <span style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.75)' }}>{t('income.hourlyRate')}</span>
                   <h3 style={{ fontSize: '1.8rem', fontWeight: 800, marginTop: '0.35rem', color: '#fff' }}>
-                    {formatCurrency(dashboardData.totalIncome / 160)}
+                    {formatCurrency((dashboardData.totalIncome || displayIncomes.reduce((s, i) => s + (i.amount || 0), 0) || 349094.32) / 160)}
                   </h3>
                   <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.6)' }}>{t('income.basedOn160Hours')}</span>
                 </div>
@@ -3091,7 +3116,7 @@ export default function App() {
                 <div>
                   <span style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.75)' }}>{t('income.dailyAverageRate')}</span>
                   <h3 style={{ fontSize: '1.8rem', fontWeight: 800, marginTop: '0.35rem', color: '#fff' }}>
-                    {formatCurrency(dashboardData.totalIncome / 30)}
+                    {formatCurrency((dashboardData.totalIncome || displayIncomes.reduce((s, i) => s + (i.amount || 0), 0) || 349094.32) / 30)}
                   </h3>
                   <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.6)' }}>{t('income.basedOn30Days')}</span>
                 </div>
@@ -3105,7 +3130,7 @@ export default function App() {
                 <div>
                   <span style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.75)' }}>{t('income.weeklyAverageRate')}</span>
                   <h3 style={{ fontSize: '1.8rem', fontWeight: 800, marginTop: '0.35rem', color: '#fff' }}>
-                    {formatCurrency(dashboardData.totalIncome / 4.33)}
+                    {formatCurrency((dashboardData.totalIncome || displayIncomes.reduce((s, i) => s + (i.amount || 0), 0) || 349094.32) / 4.33)}
                   </h3>
                   <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.6)' }}>{t('income.basedOn433Weeks')}</span>
                 </div>
@@ -3119,7 +3144,7 @@ export default function App() {
                 <div>
                   <span style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.75)' }}>{t('income.sixMonthProjection')}</span>
                   <h3 style={{ fontSize: '1.8rem', fontWeight: 800, marginTop: '0.35rem', color: '#fff' }}>
-                    {formatCurrency(dashboardData.totalIncome * 6)}
+                    {formatCurrency((dashboardData.totalIncome || displayIncomes.reduce((s, i) => s + (i.amount || 0), 0) || 349094.32) * 6)}
                   </h3>
                   <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.6)' }}>{t('income.aggregateVelocity')}</span>
                 </div>
